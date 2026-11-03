@@ -47,6 +47,7 @@ table{width:100%;border-collapse:collapse}th{background:var(--c);color:#fff;text
 .tot .t{border-top:2px solid var(--c);margin-top:6px;padding-top:8px;font-size:18px;font-weight:700;color:var(--c)}
 .bold .tot .t{background:var(--c);color:#fff;padding:10px}.nt{margin-top:26px}.nt h4{margin:0 0 4px;color:var(--c)}.ft{margin-top:30px;text-align:center;color:#777;border-top:1px solid #ddd;padding-top:12px}
 .empty{padding:30px;text-align:center;color:#999;border:2px dashed #ddd;margin-top:8px}
+#wrap [data-go]{cursor:pointer}#wrap [data-go]:hover{outline:2px dashed var(--ac);outline-offset:2px}
 @media(min-width:861px){.ph #fullb{display:none}}
 @media(max-width:860px){.main{grid-template-columns:1fr;grid-template-rows:minmax(0,40%) minmax(0,1fr)}#pv{order:-1;padding:8px}#panel{border-right:0;border-top:3px solid var(--ink)}
  .main.full{grid-template-rows:minmax(0,1fr) 0}.main.full #panel{display:none}.main.full~#edit{display:block}}
@@ -90,15 +91,15 @@ const num=v=>+v||0,R=()=>rates[s.dtype],sym=c=>c=='USD'?'US$':'$';
 const conv=v=>s.cin==s.cout?v:R()?(s.cin=='ARS'?v/R():v*R()):NaN;
 const fmt=v=>isFinite(v)?sym(s.cout)+' '+v.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}):'Sin cotización';
 function render(){
- const w=$('#wrap');[['--c',s.c],['--a',s.a],['--f',`'${s.f}'`],['--h',`'${s.h}'`]].forEach(([k,v])=>w.style.setProperty(k,v));
+ const w=$('#paper');[['--c',s.c],['--a',s.a],['--f',`'${s.f}'`],['--h',`'${s.h}'`]].forEach(([k,v])=>w.style.setProperty(k,v));
  const sub=s.items.reduce((a,i)=>a+num(i.q)*conv(num(i.p)),0),dc=sub*num(s.disc)/100,iv=(sub-dc)*num(s.iva)/100,tot=sub-dc+iv;
- const rw=s.items.map(i=>`<tr><td>${esc(i.n)}</td><td class="r">${num(i.q)}</td><td>${esc(i.u)}</td><td class="r">${fmt(conv(num(i.p)))}</td><td class="r">${fmt(conv(num(i.p))*num(i.q))}</td></tr>`).join('');
+ const rw=s.items.map((i,x)=>`<tr data-go="items:#${x}"><td>${esc(i.n)}</td><td class="r">${num(i.q)}</td><td>${esc(i.u)}</td><td class="r">${fmt(conv(num(i.p)))}</td><td class="r">${fmt(conv(num(i.p))*num(i.q))}</td></tr>`).join('');
  $('#paper').className='p '+s.tpl;
- $('#paper').innerHTML=`<div class="hd"><div>${s.logo?`<img src="${s.logo}">`:''}<div class="co">${esc(s.company)}</div><div class="tg">${esc(s.tagline)}</div><div class="ct">${esc(s.contact)}</div></div><div class="r"><h1>${esc(s.title)}</h1><div>N.º ${esc(s.num)}</div><div>${esc(s.date.split('-').reverse().join('/'))}</div></div></div>
- <div class="meta"><b>${esc(s.clientLabel)}</b><div>${esc(s.client)}</div><div class="pre">${esc(s.clientInfo)}</div></div>
- <table><thead><tr><th>${esc(s.cDesc)}</th><th class="r">${esc(s.cQty)}</th><th>${esc(s.cUnit)}</th><th class="r">${esc(s.cPrice)}</th><th class="r">${esc(s.cTotal)}</th></tr></thead><tbody>${rw}</tbody></table>${s.items.length?'':'<div class="empty">Agregá ítems desde el menú ☰ › Ítems</div>'}
- <div class="tot"><div><span>Subtotal</span><span>${fmt(sub)}</span></div>${dc?`<div><span>Descuento ${num(s.disc)}%</span><span>- ${fmt(dc)}</span></div>`:''}${iv?`<div><span>IVA ${num(s.iva)}%</span><span>${fmt(iv)}</span></div>`:''}<div class="t"><span>TOTAL</span><span>${fmt(tot)}</span></div>${s.cin!=s.cout&&R()?`<div style="font-size:11px;color:#777">Cotización dólar ${s.dtype}: $ ${R().toLocaleString('es-AR')}</div>`:''}</div>
- ${s.notes?`<div class="nt"><h4>Notas</h4><div class="pre">${esc(s.notes)}</div></div>`:''}${s.terms?`<div class="nt"><h4>Condiciones</h4><div class="pre">${esc(s.terms)}</div></div>`:''}<div class="ft">${esc(s.footer)}</div>`;
+ $('#paper').innerHTML=`<div class="hd"><div>${s.logo?`<img data-go="encabezado:logo" src="${s.logo}">`:''}<div class="co" data-go="encabezado:company">${esc(s.company)}</div><div class="tg" data-go="encabezado:tagline">${esc(s.tagline)}</div><div class="ct" data-go="encabezado:contact">${esc(s.contact)}</div></div><div class="r"><h1 data-go="encabezado:title">${esc(s.title)}</h1><div data-go="encabezado:num">N.º ${esc(s.num)}</div><div data-go="encabezado:date">${esc(s.date.split('-').reverse().join('/'))}</div></div></div>
+ <div class="meta"><b data-go="cliente:clientLabel">${esc(s.clientLabel)}</b><div data-go="cliente:client">${esc(s.client)||'&nbsp;'}</div><div class="pre" data-go="cliente:clientInfo">${esc(s.clientInfo)}</div></div>
+ <table><thead><tr><th data-go="textos:cDesc">${esc(s.cDesc)}</th><th class="r" data-go="textos:cQty">${esc(s.cQty)}</th><th data-go="textos:cUnit">${esc(s.cUnit)}</th><th class="r" data-go="textos:cPrice">${esc(s.cPrice)}</th><th class="r" data-go="textos:cTotal">${esc(s.cTotal)}</th></tr></thead><tbody>${rw}</tbody></table>${s.items.length?'':'<div class="empty" data-go="items:q">Tocá acá para agregar ítems</div>'}
+ <div class="tot" data-go="moneda:disc"><div><span>Subtotal</span><span>${fmt(sub)}</span></div>${dc?`<div><span>Descuento ${num(s.disc)}%</span><span>- ${fmt(dc)}</span></div>`:''}${iv?`<div><span>IVA ${num(s.iva)}%</span><span>${fmt(iv)}</span></div>`:''}<div class="t"><span>TOTAL</span><span>${fmt(tot)}</span></div>${s.cin!=s.cout&&R()?`<div style="font-size:11px;color:#777">Cotización dólar ${s.dtype}: $ ${R().toLocaleString('es-AR')}</div>`:''}</div>
+ ${s.notes?`<div class="nt" data-go="textos:notes"><h4>Notas</h4><div class="pre">${esc(s.notes)}</div></div>`:''}${s.terms?`<div class="nt" data-go="textos:terms"><h4>Condiciones</h4><div class="pre">${esc(s.terms)}</div></div>`:''}<div class="ft" data-go="textos:footer">${esc(s.footer)}</div>`;
  try{localStorage.setItem('pres2',JSON.stringify(s))}catch(e){}fit()}
 const fit=()=>{$('#wrap').style.zoom=Math.min(1,($('#pv').clientWidth-($('#pv').offsetWidth<500?16:30))/794)};
 function rows(){$('#il').textContent=`Ítems del presupuesto (${s.items.length})`;$('#mpl').firstChild.textContent=`Precio unitario (${sym(s.cin)})`;
@@ -130,6 +131,8 @@ document.addEventListener('click',e=>{if(!e.target.closest('#menu,#hb'))$('#menu
  if(d.add)add(CAT[d.add].n,CAT[d.add].u);
  if(d.addm){add($('#q').value.trim());$('#q').value='';res()}
  if(d.cat){cat=d.cat;res()}if(d.del){s.items.splice(d.del,1);rows();render()}});
+function go(sec,key){show(sec);setTimeout(()=>{let el=key[0]=='#'?document.querySelector(`.it[data-x="${key.slice(1)}"] [data-f="n"]`):key=='q'?$('#q'):key=='logo'?$('#logo'):document.querySelector(`[data-k="${key}"]`);if(!el)return;el.scrollIntoView({block:'center',behavior:'smooth'});if(el.type!='file'&&el.type!='date'&&el.type!='color')el.focus({preventScroll:true})},60)}
+$('#paper').addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){const[a,b]=g.dataset.go.split(':');go(a,b)}});
 $('#hb').onclick=()=>$('#menu').classList.toggle('open');
 $('#fullb').onclick=()=>{$('#main').classList.add('full');setTimeout(fit,50)};$('#edit').onclick=()=>show(cur);
 $('#madd').onclick=()=>{const n=$('#mn').value.trim();if(!n){$('#mn').focus();toast('Escribí una descripción');return}add(n,$('#mu').value||'un',num($('#mq').value)||1,num($('#mp').value));$('#mn').value='';$('#mp').value='';$('#mq').value=1;$('#mn').focus()};
